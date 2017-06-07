@@ -106,6 +106,7 @@ public class SCRoom implements Runnable {
 
     public SCRoom getRoom() {return this;}
 
+    /*
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             System.out.println("Usage: Classname ServerPort");
@@ -115,4 +116,5 @@ public class SCRoom implements Runnable {
 
         new Thread(new SCRoom(ePort)).start();
     }
+    */
 }
