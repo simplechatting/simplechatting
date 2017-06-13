@@ -13,52 +13,68 @@ import java.util.*;
 public class SCServer implements Runnable{
     Selector selector;
 
+    public static void main(String args[]) throws IOException {
+        Thread t = new Thread(new SCServer());
+        t.run();
+        DummyMsgSender.STARTMAIN();
+        System.out.println("success to run");
+    }
+
     public SCServer() throws IOException{
         // non block io 생성
         DatagramChannel channel = DatagramChannel.open();
-        channel.bind(null);
+        SocketAddress addr = new InetSocketAddress(SCSettings.port);
+        channel.bind(addr);
         channel.configureBlocking(false);
 
 
         // 셀렉터 생성
         selector = Selector.open();
+
+
         // selector에 등록
-        channel.register(selector, SelectionKey.OP_ACCEPT);
+        int socketOPs = SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+        selector.wakeup();
+        SelectionKey key = channel.register(selector, SelectionKey.OP_ACCEPT);
 
     }
     @Override
     public void run() {
-        int socketOPs = SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
-
-        ByteBuffer buf = null;
+        System.out.println("success to run");
+        ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
         try{
-            while(selector.select() > 0){
-                Set keys = selector.selectedKeys();
-                Iterator iter = keys.iterator();
+            while(true) {
+                System.out.println("waiting...");
+                if (selector.select() > 0) {
+                    System.out.println("has selector");
+                    System.out.println(selector.toString());
+                    Set<SelectionKey> selectionKeys = selector.selectedKeys();
+                    Iterator iterator = selectionKeys.iterator();
+                    while (iterator.hasNext()) {
+                        try {
+                            SelectionKey key = (SelectionKey) iterator.next();
+                            iterator.remove();
 
-                while(iter.hasNext()){
-                    SelectionKey key = (SelectionKey)iter.next();
-                    iter.remove();
+                            if (!key.isValid())
+                                continue;
 
-                    SelectableChannel channel = key.channel();
+                            if (key.isReadable()) {
+                                DatagramChannel channel = (DatagramChannel) key.channel();
+                                SocketAddress socketAddress = channel.receive(buf);
 
-                    if(channel instanceof  ServerSocketChannel){
-                        // accept
-                        ServerSocketChannel serverChannel = (ServerSocketChannel)channel;
-                        SocketChannel socketChannel = serverChannel.accept();
+                                System.out.println(buf.toString());
 
-                        if(socketChannel == null)
-                            continue;
-
-                        // nio
-                        socketChannel.configureBlocking(false);
-
-                        socketChannel.register(selector, socketOPs);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        System.out.println("run end");
     }
 }
