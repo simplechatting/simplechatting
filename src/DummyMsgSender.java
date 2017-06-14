@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 /**
  * Created by penguin on 17. 6. 7.
@@ -34,5 +35,15 @@ public class DummyMsgSender {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public String[] Scenario1(){
+        String dialogs[] = {
+                /*uid*/"00000000"+/*gid*/"00000000"+/*msg*/"Hello",
+                /*uid*/"00000001"+/*gid*/"00000000"+/*msg*/"Hello",
+                /*uid*/"00000002"+/*gid*/"00000000"+/*msg*/"Hello2",
+                /*uid*/"00000000"+/*gid*/"00000000"+/*msg*/"welcome"
+        };
+        return dialogs;
     }
 }

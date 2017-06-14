@@ -35,22 +35,25 @@ public class SCServer implements Runnable{
         // selector에 등록
         int socketOPs = SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
         selector.wakeup();
-        SelectionKey key = channel.register(selector, SelectionKey.OP_ACCEPT);
+        SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
 
     }
     @Override
     public void run() {
         System.out.println("success to run");
         ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
+        /*DEBUG*/ int debugi=0, tmpi = 0;
         try{
             while(true) {
-                System.out.println("waiting...");
+                if(debugi != tmpi) {
+                    System.out.println("waiting...");
+                    tmpi = debugi;
+                }
                 if (selector.select() > 0) {
-                    System.out.println("has selector");
-                    System.out.println(selector.toString());
                     Set<SelectionKey> selectionKeys = selector.selectedKeys();
                     Iterator iterator = selectionKeys.iterator();
                     while (iterator.hasNext()) {
+                        debugi++;
                         try {
                             SelectionKey key = (SelectionKey) iterator.next();
                             iterator.remove();
@@ -59,11 +62,7 @@ public class SCServer implements Runnable{
                                 continue;
 
                             if (key.isReadable()) {
-                                DatagramChannel channel = (DatagramChannel) key.channel();
-                                SocketAddress socketAddress = channel.receive(buf);
-
-                                System.out.println(buf.toString());
-
+                                processRequest(key);
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -76,5 +75,16 @@ public class SCServer implements Runnable{
         }
 
         System.out.println("run end");
+    }
+
+    private void processRequest(SelectionKey key) throws IOException{
+        DatagramChannel channel = (DatagramChannel) key.channel();
+
+        ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
+        SocketAddress socketAddress = channel.receive(buf);
+        byte bytes[] = new byte[buf.position()];
+        buf.flip();
+        buf.get(bytes);
+        String data = new String(bytes);
     }
 }
