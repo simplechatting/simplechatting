@@ -37,13 +37,13 @@ public class DummyMsgSender {
         }
     }
 
-    public String[] Scenario1(){
-        String dialogs[] = {
-                /*uid*/"00000000"+/*gid*/"00000000"+/*msg*/"Hello",
-                /*uid*/"00000001"+/*gid*/"00000000"+/*msg*/"Hello",
-                /*uid*/"00000002"+/*gid*/"00000000"+/*msg*/"Hello2",
-                /*uid*/"00000000"+/*gid*/"00000000"+/*msg*/"welcome"
+    public SCMessage[] Scenario1(){
+        SCMessage msg[] = {
+                new SCMessage(00000000, 00000000, 1, "Message1"),
+                new SCMessage(00000001, 00000000, 1, "Message1"),
+                new SCMessage(00000002, 00000000, 1, "Message1"),
+                new SCMessage(00000003, 00000000, 1, "Message1"),
         };
-        return dialogs;
+        return msg;
     }
 }

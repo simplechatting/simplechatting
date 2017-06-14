@@ -1,90 +1,82 @@
-import com.sun.corba.se.spi.activation.*;
-
 import java.io.*;
 import java.net.*;
-import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
 
 /**
- * Created by penguin on 17. 6. 6.
+ * Created by penguin on 17. 6. 15.
  */
-
 public class SCServer implements Runnable{
-    Selector selector;
 
-    public static void main(String args[]) throws IOException {
-        Thread t = new Thread(new SCServer());
-        t.run();
-        DummyMsgSender.STARTMAIN();
-        System.out.println("success to run");
+    public static void main(String args[]){
+
     }
+
+    private Selector selector;
+    private ServerSocketChannel serverChannel;
+    private SocketChannel socketChannel;
+    private HashMap<Integer, SCRoom> scRooms = new HashMap<>();
 
     public SCServer() throws IOException{
-        // non block io 생성
-        DatagramChannel channel = DatagramChannel.open();
-        SocketAddress addr = new InetSocketAddress(SCSettings.port);
-        channel.bind(addr);
-        channel.configureBlocking(false);
-
-
-        // 셀렉터 생성
+        // selector 생성
         selector = Selector.open();
 
-
-        // selector에 등록
-        int socketOPs = SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
-        selector.wakeup();
-        SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
-
+        // channel 바인드
+        serverChannel = ServerSocketChannel.open();
+        serverChannel.configureBlocking(false);
+        serverChannel.bind(new InetSocketAddress(SCSettings.port));
+        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
     }
+
     @Override
     public void run() {
-        System.out.println("success to run");
-        ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
-        /*DEBUG*/ int debugi=0, tmpi = 0;
-        try{
-            while(true) {
-                if(debugi != tmpi) {
-                    System.out.println("waiting...");
-                    tmpi = debugi;
-                }
-                if (selector.select() > 0) {
-                    Set<SelectionKey> selectionKeys = selector.selectedKeys();
-                    Iterator iterator = selectionKeys.iterator();
-                    while (iterator.hasNext()) {
-                        debugi++;
-                        try {
-                            SelectionKey key = (SelectionKey) iterator.next();
-                            iterator.remove();
+        while (true){
+            try {
+                if(selector.select() == 0)
+                    continue;
 
-                            if (!key.isValid())
-                                continue;
+                Set<SelectionKey> keys = selector.selectedKeys();
+                Iterator<SelectionKey> iter = keys.iterator();
 
-                            if (key.isReadable()) {
-                                processRequest(key);
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                while(iter.hasNext()){
+                    SelectionKey key = iter.next();
+
+                    if(key.isAcceptable()){
+                        accept(key);
+                    }else if(key.isReadable()){
+
+                    }else if(key.isWritable()){
+
                     }
                 }
+            } catch (IOException e) {
+                System.out.println("server stopped");
+                if(serverChannel.isOpen())
+                    restartServer();
+                else
+                    System.out.println("IOException occurred.");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-        System.out.println("run end");
     }
 
-    private void processRequest(SelectionKey key) throws IOException{
-        DatagramChannel channel = (DatagramChannel) key.channel();
+    public void restartServer(){
+        try{
+            System.out.println("restart server");
+            serverChannel = ServerSocketChannel.open();
+            serverChannel.configureBlocking(false);
+            serverChannel.bind(new InetSocketAddress(SCSettings.port));
+            serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+        } catch (ClosedChannelException e) {
+            System.out.println("fail to restart : ClosedChannelException");
+        } catch (IOException e) {
+            System.out.println("fail to restart : IOException");
+        }
+    }
 
-        ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
-        SocketAddress socketAddress = channel.receive(buf);
-        byte bytes[] = new byte[buf.position()];
-        buf.flip();
-        buf.get(bytes);
-        String data = new String(bytes);
+    public void accept(SelectionKey key) throws IOException{
+        serverChannel = (ServerSocketChannel)key.channel();
+        socketChannel = serverChannel.accept();
+
+        String msg = ""
     }
 }
