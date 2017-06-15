@@ -1,4 +1,4 @@
-import com.sun.corba.se.spi.activation.*;
+import Settings.*;
 
 import java.io.*;
 import java.net.*;
@@ -10,32 +10,30 @@ import java.util.*;
  * Created by penguin on 17. 6. 6.
  */
 
-public class SCServer implements Runnable{
+public class SCServer_UDP implements Runnable{
     Selector selector;
 
     public static void main(String args[]) throws IOException {
-        Thread t = new Thread(new SCServer());
+        Thread t = new Thread(new SCServer_UDP());
         t.run();
         DummyMsgSender.STARTMAIN();
         System.out.println("success to run");
     }
 
-    public SCServer() throws IOException{
+    public SCServer_UDP() throws IOException{
         // non block io 생성
         DatagramChannel channel = DatagramChannel.open();
         SocketAddress addr = new InetSocketAddress(SCSettings.port);
         channel.bind(addr);
         channel.configureBlocking(false);
 
-
         // 셀렉터 생성
         selector = Selector.open();
-
 
         // selector에 등록
         int socketOPs = SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
         selector.wakeup();
-        SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+        SelectionKey key = channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
     }
     @Override
