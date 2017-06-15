@@ -1,3 +1,5 @@
+import Settings.*;
+
 import java.io.*;
 import java.net.*;
 import java.nio.*;
@@ -31,7 +33,7 @@ public class SCServer_UDP implements Runnable{
         // selector에 등록
         int socketOPs = SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
         selector.wakeup();
-        SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+        SelectionKey key = channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
     }
     @Override

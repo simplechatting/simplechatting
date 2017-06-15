@@ -1,6 +1,7 @@
+import Settings.*;
+
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
 /**
  * Created by penguin on 17. 6. 7.
