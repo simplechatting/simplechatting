@@ -37,14 +37,4 @@ public class DummyMsgSender {
             e.printStackTrace();
         }
     }
-
-    public SCMessage[] Scenario1(){
-        SCMessage msg[] = {
-                new SCMessage(00000000, 00000000, 1, "Message1"),
-                new SCMessage(00000001, 00000000, 1, "Message1"),
-                new SCMessage(00000002, 00000000, 1, "Message1"),
-                new SCMessage(00000003, 00000000, 1, "Message1"),
-        };
-        return msg;
-    }
 }

@@ -23,7 +23,7 @@ public class SCServer implements Runnable{
     }
     private Selector selector;
     private ServerSocketChannel serverChannel;
-    private List<SocketChannel> connections = new Vector<>();
+    private List<SCServerClient> connections = new Vector<>();
     private HashMap<Integer, DummyRoom> scRooms = new HashMap<>();
 
     public SCServer(){
@@ -56,13 +56,22 @@ public class SCServer implements Runnable{
 
                 while(iter.hasNext()){
                     SelectionKey key = iter.next();
+                    iter.remove();
+
+                    if(!key.isValid()) {
+                        continue;
+                    }
 
                     if(key.isAcceptable()){
                         accept(key);
-                    }else if(key.isReadable()){
+                    }
 
-                    }else if(key.isWritable()){
+                    else if(key.isReadable()){
+                        receive(key);
+                    }
 
+                    else if(key.isWritable()){
+                        send(key);
                     }
                 }
             } catch (IOException e) {
@@ -89,27 +98,63 @@ public class SCServer implements Runnable{
         }
     }
 
-    public void accept(SelectionKey key) throws IOException{
+    public void accept(SelectionKey key){
         serverChannel = (ServerSocketChannel)key.channel();
-        SocketChannel socketChannel = serverChannel.accept();
-        connections.add(socketChannel);
-        System.out.println("연결됨");
+        SocketChannel channel = null;
+
+        try {
+            channel = serverChannel.accept();
+            channel.configureBlocking(false);
+            channel.register(selector, SelectionKey.OP_READ);
+
+            SCServerClient client = new SCServerClient(channel);
+            connections.add(client);
+
+            System.out.println("연결됨");
+        } catch (IOException e) {
+            System.out.println("");
+        }
     }
 
     public void receive(SelectionKey key) throws IOException{
-        SocketChannel channel = (SocketChannel)key.attachment();
-
+        SocketChannel channel = (SocketChannel)key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(SCSettings.datagramSize);
-        if(channel.read(buffer) == -1)
+        SCPacket packet = null;
+
+        // 전송 확인
+        try {
+            int read = -1;
+            if((read = channel.read(buffer)) == -1){
+                channel.close();
+                key.cancel();
+                return;
+            }
+        }catch (IOException e){
+            connections.remove(channel);
+            try{
+                channel.close();
+            }catch (IOException e2){}
             return;
-
-        buffer.flip();
-        String data = SCSettings.charset.decode(buffer).toString();
-
-        for(SocketChannel channel1 : connections){
-            SelectionKey key1 = channel1.keyFor(selector);
-            key1.interestOps(SelectionKey.OP_WRITE);
         }
+
+        try {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer.array());
+            ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            packet = (SCPacket)objectInputStream.readObject();
+        } catch (ClassNotFoundException e) {
+            channel.close();
+            key.cancel();
+            return;
+        }
+        System.out.println(packet.toString());
+
+        // CASE 분류
+
+
         selector.wakeup();
+    }
+
+    public void send(SelectionKey key) throws IOException{
+
     }
 }
