@@ -1,3 +1,5 @@
+package deprecated.Others;
+
 /**
  * Created by JoH on 2017-06-06.
  */

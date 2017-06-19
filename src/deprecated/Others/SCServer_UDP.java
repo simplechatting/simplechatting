@@ -1,3 +1,5 @@
+package deprecated.Others;
+
 import Settings.*;
 
 import java.io.*;
@@ -23,7 +25,7 @@ public class SCServer_UDP implements Runnable{
     public SCServer_UDP() throws IOException{
         // non block io 생성
         DatagramChannel channel = DatagramChannel.open();
-        SocketAddress addr = new InetSocketAddress(SCSettings.port);
+        SocketAddress addr = new InetSocketAddress(Settings.SCSettings.port);
         channel.bind(addr);
         channel.configureBlocking(false);
 
@@ -39,7 +41,7 @@ public class SCServer_UDP implements Runnable{
     @Override
     public void run() {
         System.out.println("success to run");
-        ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
+        ByteBuffer buf = ByteBuffer.allocateDirect(Settings.SCSettings.datagramSize);
         /*DEBUG*/ int debugi=0, tmpi = 0;
         try{
             while(true) {
@@ -78,7 +80,7 @@ public class SCServer_UDP implements Runnable{
     private void processRequest(SelectionKey key) throws IOException{
         DatagramChannel channel = (DatagramChannel) key.channel();
 
-        ByteBuffer buf = ByteBuffer.allocateDirect(SCSettings.datagramSize);
+        ByteBuffer buf = ByteBuffer.allocateDirect(Settings.SCSettings.datagramSize);
         SocketAddress socketAddress = channel.receive(buf);
         byte bytes[] = new byte[buf.position()];
         buf.flip();

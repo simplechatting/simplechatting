@@ -1,4 +1,6 @@
-package DummyClient;
+package deprecated.SCClient;
+
+import Settings.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -8,7 +10,7 @@ import java.io.*;
 /**
  * Created by penguin on 17. 6. 15.
  */
-public class DummyClientGUI {
+public class SCClientAppGUI {
     public JPanel GUI;
     private JTextField userName;
     private JButton connectServer;
@@ -27,18 +29,23 @@ public class DummyClientGUI {
     private JButton Logout;
     private JLabel loginMsg;
 
-    public DummyClient controler;
-    public DummyClientDB model;
+    public SCClientApp controler;
+    public SCClientAppDB model;
 
-    public DummyClientGUI() {
+    public SCClientAppGUI() {
         ////////////////// 로그인 화면 //////////////////
         connectServer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
                     // TODO: Server와 Connect후, userid 받아옴
-                    String username = userName.getText().toString();
+                    String username = userName.getText();
                     controler.startClient(username);
+                    Thread t = new Thread(controler);
+                    t.setDaemon(true);
+                    t.run();
+                    controler.write(controler.channel, new Settings.SCPacket(Settings.SCPacketType.LOGIN, username, ""));
+                    model.startDB(username);
 
                     // 룸 목록 이동
                     loginMsg.setText("서버 연결됨");
@@ -46,9 +53,7 @@ public class DummyClientGUI {
                     Login.setVisible(false);
                     Rooms.setVisible(true);
 
-                } catch (IOException e) {
-                    loginMsg.setText(e.getMessage());
-                } catch (InterruptedException e) {
+                } catch (IOException | InterruptedException e) {
                     loginMsg.setText(e.getMessage());
                 }
             }
@@ -59,7 +64,10 @@ public class DummyClientGUI {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 // TODO: 서버에 새로운 방 요청
+                String roomName =  newRoomName.getText();
+                controler.addNewRoom(roomName);
                 // TODO: 서버에서 방 목록 불러오기
+
                 // TODO: RoomList에 새로운 방 추가
 
             }
@@ -68,7 +76,7 @@ public class DummyClientGUI {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 // TODO: Server와 연결 종료
-
+                controler.stopClient();
                 // 로그인 화면으로 돌아가기
                 Rooms.setVisible(false);
                 Login.setVisible(true);

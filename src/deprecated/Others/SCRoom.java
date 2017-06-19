@@ -1,4 +1,4 @@
-/**
+package deprecated.Others; /**
  * Created by kuman514 on 2017-06-06.
  */
 

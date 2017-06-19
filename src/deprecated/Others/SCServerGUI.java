@@ -1,3 +1,5 @@
+package deprecated.Others;
+
 import javax.swing.*;
 
 /**

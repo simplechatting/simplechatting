@@ -1,3 +1,5 @@
+package deprecated.Others;
+
 import Settings.*;
 
 import java.io.*;
@@ -22,7 +24,7 @@ public class DummyMsgSender {
                     /*GroupdID*/ "00000000" + /* = 8 length num*/
                     /*message */ "this is message";
                 byte[] msg = message.getBytes();
-                packet = new DatagramPacket(msg, msg.length, address, SCSettings.port);
+                packet = new DatagramPacket(msg, msg.length, address, Settings.SCSettings.port);
                 socket.send(packet);
                 System.out.println(message);
                 Thread.sleep(1000);
@@ -36,15 +38,5 @@ public class DummyMsgSender {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public SCMessage[] Scenario1(){
-        SCMessage msg[] = {
-                new SCMessage(00000000, 00000000, 1, "Message1"),
-                new SCMessage(00000001, 00000000, 1, "Message1"),
-                new SCMessage(00000002, 00000000, 1, "Message1"),
-                new SCMessage(00000003, 00000000, 1, "Message1"),
-        };
-        return msg;
     }
 }
