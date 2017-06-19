@@ -1,4 +1,4 @@
-package Settings;
+package deprecated.Settings;
 
 import java.nio.charset.*;
 
@@ -11,4 +11,6 @@ public class SCSettings {
     public static int datagramSize = 512;
     public static int datagramInterval = 300;
     public static Charset charset = Charset.forName("UTF-8");
+
+    public static int clientPort = 13;
 }

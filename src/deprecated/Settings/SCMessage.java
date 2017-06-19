@@ -1,4 +1,4 @@
-package Settings;
+package deprecated.Settings;
 
 /**
  * Created by penguin on 17. 6. 15.
